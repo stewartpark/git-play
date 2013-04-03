@@ -88,6 +88,8 @@ _conf = Config(_workdir)
 _conf.setup()
 _conf.app_spawn()
 
+
+print 'Spawned.'
 try:
     while True:
         logging.debug('Sleeping...')
