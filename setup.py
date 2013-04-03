@@ -9,7 +9,7 @@ setup(
     url="http://interruptz.github.com/git-play",
     license="LICENSE",
     description="Git-play is a command line tool for deploying an application server easily from remote git repository.",
-    long_description = open("README").read(),
+    long_description = open("README.md").read(),
     install_requires=[
         'PyYAML==3.10',
         'GitPython==0.3.2.RC1'      
