@@ -1,0 +1,123 @@
+#!/usr/bin/env python 
+#-*- coding: utf-8 -*-
+'''
+    git-play
+        by Ju-yeong Park <interruptz@gmail.com>
+'''
+
+import argparse
+import git
+import logging
+import os
+import subprocess
+import sys
+import time 
+import yaml
+
+
+# Parse arguments.
+parser = argparse.ArgumentParser(prog='git-play',description='Watch and deploy remote git repository')
+parser.add_argument('repo')
+parser.add_argument('remote', nargs='?')
+parser.add_argument('branch', nargs='?')
+parser.add_argument('--workdir', nargs='?', help='Working directory')
+parser.add_argument('--verbose', '-v', default=False, action='store_true')
+parser.add_argument('--logfile', nargs='?')
+args = parser.parse_args(sys.argv[1:])
+
+# Default values
+_repo = args.repo
+_remote = args.remote or "origin"
+_branch = args.branch or "master"
+_workdir = args.workdir or os.path.basename(args.repo)
+_verbose = args.verbose
+_logfile = args.logfile or ('%s/%s.log' % (_workdir,_workdir))
+
+try:
+    repo = git.Repo.clone_from(_repo, _workdir)
+    repo.git.checkout('%s/%s' % (_remote, _branch))
+except:
+    repo = git.Repo(_workdir)
+    repo.git.checkout('%s/%s' % (_remote, _branch))
+
+# Logging setting
+logging.basicConfig(filename=_logfile,filemode='a+',level=logging.DEBUG if _verbose else logging.INFO)
+
+logging.info('Git: %s, %s/%s' % (_repo, _remote, _branch))
+logging.info('Working directory: %s' % (_workdir,))
+
+
+
+# Utilities
+class Config(object):
+    def __init__(self, path):
+        try:
+            self.config = yaml.load(open('%s/.git-play.yml' % path))
+        except:
+            self.config = {}
+            logging.error('Failed to read configurations.')
+    def setup(self):
+        if 'setup' in self.config:
+            logging.info('Setting up...')
+            os.system(';'.join(self.config['setup']))
+    def teardown(self):
+        if 'teardown' in self.config:
+            logging.info('Tearing down...')
+            os.system(';'.join(self.config['teardown']))
+    def app_spawn(self):
+        if 'app' in self.config:
+            if 'exec' in self.config['app']:
+                logging.info('Spawning an application...')
+                self.server = subprocess.Popen(self.config['app']['exec'].split(), shell=False)
+            else:
+                logging.warning('`app.exec` is empty.')
+    def is_respawnable(self):
+        if 'app' in self.config:
+            if 'respawn' in self.config['app']:
+                if self.config['app']['respawn']:
+                    return self.config['app']['respawn']
+        return False
+    def app_respawn(self):
+        if self.is_respawnable():
+            logging.info('Re-spawning an application...')
+            self.server = subprocess.Popen(self.config['app']['exec'].split(), shell=False)
+tick = 0
+
+# Initial start
+_conf = Config(_workdir)
+_conf.setup()
+_conf.app_spawn()
+
+try:
+    while True:
+        logging.debug('Sleeping...')
+        time.sleep(0.3)
+        tick = (tick + 1) % 12
+        if tick == 11:
+            # Pull every minute.
+            logging.debug('Pulling from the remote repository...')
+            rst = repo.git.pull(_remote, _branch)
+            # See if something is changed.
+            if rst != 'Already up-to-date.':
+                # If it is,
+                _conf.teardown()
+                try:
+                    _conf.server.kill()
+                except:
+                    pass
+                _conf = Config(_workdir) 
+                _conf.setup()
+                _conf.app_spawn()
+        else:
+            # See if the process is dead
+            if _conf.is_respawnable():
+                if _conf.server.poll() != None:
+                    # Respawn.
+                    _conf.app_respawn()
+except KeyboardInterrupt:
+    # Ctrl+C
+    _conf.teardown()
+    try:
+        _conf.server.kill()
+    except:
+        pass
