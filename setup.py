@@ -7,7 +7,7 @@ except:
 
 setup(
     name="git-play",
-    version="0.06",
+    version="0.07",
     author="Ju-yeong Park",
     author_email="interruptz@gmail.com",
     scripts=["bin/git-play"],
