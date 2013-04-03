@@ -1,19 +1,20 @@
 from distutils.core import setup
 
 try:
-    ldsc = open("README.md").read()
+    import markdown
+    ldsc = markdown.markdown(open("README.md").read())
 except:
     ldsc = ""
 
 setup(
     name="git-play",
-    version="0.03",
+    version="0.05",
     author="Ju-yeong Park",
     author_email="interruptz@gmail.com",
     scripts=["bin/git-play"],
     url="http://interruptz.github.com/git-play",
     license="LICENSE",
-    description="Git-play is a command line tool for deploying an application server easily from remote git repository.",
+    description="Git-play is a custom git command for deploying an application server very easily from a remote git repository. It checks the remote git repository every minute and if something has changed, it will restart the application server automatically.",
     long_description = ldsc,
     install_requires=[
         'PyYAML==3.10',

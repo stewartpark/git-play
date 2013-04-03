@@ -67,9 +67,13 @@ class Config(object):
             os.system(("cd \"%s\";" % (self.path,)) + (';'.join(self.config['teardown'])))
     def app_spawn(self):
         if 'app' in self.config:
+            if 'workdir' in self.config['app']:
+                path = os.path.join(self.path, self.config['app']['workdir'])
+            else:
+                path = self.path
             if 'exec' in self.config['app']:
                 logging.info('Spawning an application...')
-                self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=self.path, shell=False)
+                self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=path, shell=False)
             else:
                 logging.warning('`app.exec` is empty.')
     def is_respawnable(self):
@@ -81,7 +85,11 @@ class Config(object):
     def app_respawn(self):
         if self.is_respawnable():
             logging.info('Re-spawning an application...')
-            self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=self.path, shell=False)
+            if 'app' in self.config and 'workdir' in self.config['app']:
+                path = os.path.join(self.path, self.config['app']['workdir'])
+            else:
+                path = self.path
+            self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=path, shell=False)
 
 tick = 0
 
