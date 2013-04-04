@@ -12,7 +12,7 @@ setup(
     author_email="interruptz@gmail.com",
     scripts=["bin/git-play"],
     url="http://github.com/interruptz/git-play",
-    license="LICENSE",
+    license="MIT LICENSE",
     description="Git-play is a custom git command for deploying an application server very easily from a remote git repository. It checks the remote git repository every minute and if something has changed, it will restart the application server automatically.",
     long_description = ldsc,
     install_requires=[
