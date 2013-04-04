@@ -39,6 +39,7 @@ Django
      exec: python manage.py runserver
 
    setup:
+     - pip install -r requirements.txt  
      - cd mysite
      - python manage.py syncdb
 
@@ -54,6 +55,9 @@ Express
    app:
      respawn: yes
      exec: node app.js
+
+   setup:
+     - npm install
 
    teardown:
      - echo "The server is going down for maintanance..."
