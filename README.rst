@@ -71,3 +71,7 @@ Lastly, all you have to do is simply type the following:
 .. code-block:: console
 
    $ git play http://github.com/foo/bar origin master
+
+Contributing
+------------
+Just fork and request pulls. Any help or feedback is appreciated.
