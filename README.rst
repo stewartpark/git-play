@@ -23,7 +23,7 @@ Git-play is made for people who hate complicated configurations, thus basically 
 Configuring your git-play deployment with ``.git-play.yml``
 -----------------------------------------------------------
 
-Git-play uses the ``.git-play.yml`` file in the root of your repository to configure how you want your application server to be executed.
+Git-play uses the ``.git-play.yml`` file in the root of your repository to configure how you want your application to be executed.
 ``.git-play.yml`` file has three parts: ``app``, ``setup``, ``teardown``.
 
 For your convenience, there are several examples of ``.git-play.yml`` file.
@@ -68,7 +68,7 @@ Express
 Spray and pray!
 ---------------
 
-Lastly, all you have to do is simply type the following:
+Lastly, all you have to do is simply type the following in your dedicated server:
 
 .. code-block:: console
 
