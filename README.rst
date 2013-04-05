@@ -68,7 +68,7 @@ Express
 Spray and pray!
 ---------------
 
-Lastly, all you have to do is simply type the following in your dedicated server:
+Lastly, all you have to do is simply type the following in your terminal:
 
 .. code-block:: console
 
