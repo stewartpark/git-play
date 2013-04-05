@@ -72,15 +72,23 @@ Lastly, all you have to do is simply type the following:
 
 .. code-block:: console
 
-   $ git play http://github.com/foo/bar origin master
+   $ git play http://github.com/foo/bar --remote origin --branch master
    Spawned!
 
 For an existing repository, type the following:
 
 .. code-block:: console
 
-   $ git play bar origin master
+   $ git play bar -r origin -b master
    Spawned! 
+
+.. code-block:: console 
+
+   $ ls -F
+   bar/
+   $ cd bar 
+   $ git play 
+   Spawned!
 
 Contributing
 ------------
