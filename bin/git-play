@@ -9,6 +9,7 @@ import argparse
 import git
 import logging
 import os
+import re 
 import signal
 import subprocess
 import sys
@@ -18,7 +19,7 @@ import yaml
 
 # Parse arguments.
 parser = argparse.ArgumentParser(prog='git-play',description='Watch and deploy a repository')
-parser.add_argument('repository')
+parser.add_argument('repository', default='.', nargs='?')
 parser.add_argument('remote', default='origin', nargs='?')
 parser.add_argument('branch', default='master', nargs='?')
 parser.add_argument('--directory', '-d', nargs='?', help='Specify the name of a newly created directory (default: the name of the repository)')
@@ -32,7 +33,7 @@ args = parser.parse_args(sys.argv[1:])
 _repo = args.repository
 _remote = args.remote
 _branch = args.branch
-_workdir = args.directory or os.path.basename(args.repository.split(':')[-1])
+_workdir = args.directory or os.path.basename(re.sub(r'\/$', '', args.repository.split(':')[-1]))
 _verbose = args.verbose
 _logfile = args.log
 _wait = int(args.wait)
@@ -43,10 +44,17 @@ try:
     repo.git.checkout('%s/%s' % (_remote, _branch))
     logging.info('Cloned.')
 except:
-    repo = git.Repo(_workdir)
-    repo.git.checkout('%s/%s' % (_remote, _branch))
-    repo.git.pull(_remote, _branch)
-    logging.info('Pulled.')
+    try:
+        repo = git.Repo(_workdir)
+        repo.git.checkout('%s/%s' % (_remote, _branch))
+        repo.git.pull(_remote, _branch)
+        logging.info('Pulled.')
+    except:
+        logging.fatal('No such repository.')
+        exit(1)
+
+# _workdir should be strict.
+_workdir = repo.working_dir
 
 # Logging setting
 logging.basicConfig(filename=_logfile,filemode='a+',level=logging.DEBUG if _verbose else logging.INFO)
@@ -159,3 +167,4 @@ except KeyboardInterrupt:
     logging.info('Ctrl+C pressed.')
     _conf.teardown()
     _conf.app_terminate()
+
