@@ -41,9 +41,12 @@ _configfile = args.config
 try:
     repo = git.Repo.clone_from(_repo, _workdir)
     repo.git.checkout('%s/%s' % (_remote, _branch))
+    logging.info('Cloned.')
 except:
     repo = git.Repo(_workdir)
     repo.git.checkout('%s/%s' % (_remote, _branch))
+    repo.git.pull(_remote, _branch)
+    logging.info('Pulled.')
 
 # Logging setting
 logging.basicConfig(filename=_logfile,filemode='a+',level=logging.DEBUG if _verbose else logging.INFO)
