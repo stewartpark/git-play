@@ -75,6 +75,13 @@ Lastly, all you have to do is simply type the following:
    $ git play http://github.com/foo/bar origin master
    Spawned!
 
+For an existing repository, type the following:
+
+.. code-block:: console
+
+   $ git play bar origin master
+   Spawned! 
+
 Contributing
 ------------
 Just fork and request pulls. Any help or feedback is appreciated.
