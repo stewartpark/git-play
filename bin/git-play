@@ -60,7 +60,7 @@ class Config(object):
             if 'app' in self.config:
                 if 'env' in self.config['app']:
                     for k in self.config['app']['env']:
-                        self.env[k] = self.config['app']['env'][k]
+                        self.env[k] = str(self.config['app']['env'][k])
         except:
             self.config = {}
             logging.error('Failed to read configurations.')
