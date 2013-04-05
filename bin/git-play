@@ -29,7 +29,7 @@ args = parser.parse_args(sys.argv[1:])
 _repo = args.repo
 _remote = args.remote or "origin"
 _branch = args.branch or "master"
-_workdir = args.workdir or os.path.basename(args.repo)
+_workdir = args.workdir or os.path.basename(args.repo.split(':')[-1])
 _verbose = args.verbose
 _logfile = args.logfile or ('%s/%s.log' % (_workdir,_workdir))
 
@@ -116,7 +116,7 @@ try:
                 # If it is,
                 _conf.teardown()
                 try:
-                    _conf.server.kill()
+                    _conf.server.terminate()
                 except:
                     pass
                 _conf = Config(_workdir) 
@@ -132,6 +132,6 @@ except KeyboardInterrupt:
     # Ctrl+C
     _conf.teardown()
     try:
-        _conf.server.kill()
+        _conf.server.terminate()
     except:
         pass
