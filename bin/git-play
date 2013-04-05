@@ -9,6 +9,7 @@ import argparse
 import git
 import logging
 import os
+import signal
 import subprocess
 import sys
 import time 
@@ -16,22 +17,26 @@ import yaml
 
 
 # Parse arguments.
-parser = argparse.ArgumentParser(prog='git-play',description='Watch and deploy remote git repository')
-parser.add_argument('repo')
-parser.add_argument('remote', nargs='?')
-parser.add_argument('branch', nargs='?')
-parser.add_argument('--workdir', nargs='?', help='Working directory')
-parser.add_argument('--verbose', '-v', default=False, action='store_true')
-parser.add_argument('--logfile', nargs='?')
+parser = argparse.ArgumentParser(prog='git-play',description='Watch and deploy a repository')
+parser.add_argument('repository')
+parser.add_argument('remote', default='origin', nargs='?')
+parser.add_argument('branch', default='master', nargs='?')
+parser.add_argument('--directory', '-d', nargs='?', help='Specify the name of a newly created directory (default: the name of the repository)')
+parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Makes the fetching more verbose/talkative. Mostly useful for debugging.')
+parser.add_argument('--log', '-l', default='./git-play.log', help='Specify log file path. (default: ./git-play.log)')
+parser.add_argument('--wait', '-i',  default=60, help='Wait n seconds between pulling from the remote repository. The default is to wait for 60 seconds between each pulling.')
+parser.add_argument('--config', '-c', default='.git-play.yml', help='Specify configuration file name. (default: .git-play.yml)')
 args = parser.parse_args(sys.argv[1:])
 
 # Default values
-_repo = args.repo
-_remote = args.remote or "origin"
-_branch = args.branch or "master"
-_workdir = args.workdir or os.path.basename(args.repo.split(':')[-1])
+_repo = args.repository
+_remote = args.remote
+_branch = args.branch
+_workdir = args.directory or os.path.basename(args.repo.split(':')[-1])
 _verbose = args.verbose
-_logfile = args.logfile or ('%s/%s.log' % (_workdir,_workdir))
+_logfile = args.log
+_wait = int(args.wait)
+_configfile = args.config
 
 try:
     repo = git.Repo.clone_from(_repo, _workdir)
@@ -48,15 +53,13 @@ if _verbose:
 logging.info('Git: %s, %s/%s' % (_repo, _remote, _branch))
 logging.info('Working directory: %s' % (_workdir,))
 
-
-
 # Utilities
 class Config(object):
     def __init__(self, path):
         self.path = path
         self.env = os.environ.copy()
         try:
-            self.config = yaml.load(open('%s/.git-play.yml' % path))
+            self.config = yaml.load(open('%s/%s' %  (path, _configfile)))
             if 'app' in self.config:
                 if 'env' in self.config['app']:
                     for k in self.config['app']['env']:
@@ -80,7 +83,7 @@ class Config(object):
                 path = self.path
             if 'exec' in self.config['app']:
                 logging.info('Spawning an application...')
-                self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=path, env=self.env, shell=False)
+                self.server = subprocess.Popen(self.config['app']['exec'], close_fds=True, preexec_fn=os.setsid, cwd=path, env=self.env, stdout=subprocess.PIPE, shell=True)
             else:
                 logging.warning('`app.exec` is empty.')
     def is_respawnable(self):
@@ -96,8 +99,22 @@ class Config(object):
                 path = os.path.join(self.path, self.config['app']['workdir'])
             else:
                 path = self.path
-            self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=path, env=self.env, shell=False)
-
+            self.server = subprocess.Popen(self.config['app']['exec'], close_fds=True, preexec_fn=os.setsid, cwd=path, env=self.env, stdout=subprocess.PIPE, shell=True)
+    def app_terminate(self):
+        try:
+            logging.info('Killing the server...')
+            # Press Ctrl+C
+            os.killpg(self.server.pid, signal.SIGINT)
+            # 5 secs to clean up
+            for x in range(10):
+                if self.server.poll() != None:
+                    break
+                time.sleep(0.5)
+            else:
+                # Forcibly kill 
+                os.killpg(self.server.pid, signal.SIGKILL)
+        except:
+            logging.fatal("Couldn't kill the server")
 tick = 0
 
 # Initial start
@@ -105,25 +122,26 @@ _conf = Config(_workdir)
 _conf.setup()
 _conf.app_spawn()
 
-
 print 'Spawned.'
 try:
     while True:
-        logging.debug('Sleeping...')
-        time.sleep(5)
-        tick = (tick + 1) % 12
-        if tick == 11:
+        time.sleep(1)
+        tick = (tick + 1) % _wait
+        if tick == _wait-1:
             # Pull every minute.
             logging.debug('Pulling from the remote repository...')
-            rst = repo.git.pull(_remote, _branch)
+            while True:
+                try:
+                    rst = repo.git.pull(_remote, _branch)
+                    break
+                except:
+                    logging.error('Failed to pull, retry...')
             # See if something is changed.
             if rst != 'Already up-to-date.':
                 # If it is,
+                logging.info('Something has changed. Applying...')
                 _conf.teardown()
-                try:
-                    _conf.server.terminate()
-                except:
-                    pass
+                _conf.app_terminate() 
                 _conf = Config(_workdir) 
                 _conf.setup()
                 _conf.app_spawn()
@@ -135,8 +153,6 @@ try:
                     _conf.app_respawn()
 except KeyboardInterrupt:
     # Ctrl+C
+    logging.info('Ctrl+C pressed.')
     _conf.teardown()
-    try:
-        _conf.server.terminate()
-    except:
-        pass
+    _conf.app_terminate()
