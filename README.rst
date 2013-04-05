@@ -54,6 +54,8 @@ Express
 
    app:
      respawn: yes
+     env:
+      PORT: 80
      exec: node app.js
 
    setup:
