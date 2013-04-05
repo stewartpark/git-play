@@ -47,11 +47,12 @@ except:
     try:
         repo = git.Repo(_workdir)
         repo.git.checkout('%s/%s' % (_remote, _branch))
-        repo.git.pull(_remote, _branch)
-        logging.info('Pulled.')
     except:
         logging.fatal('No such repository.')
         exit(1)
+    repo.git.pull(_remote, _branch)
+    logging.info('Pulled.')
+
 
 # _workdir should be strict.
 _workdir = repo.working_dir
