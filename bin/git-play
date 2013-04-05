@@ -80,7 +80,7 @@ class Config(object):
                 path = self.path
             if 'exec' in self.config['app']:
                 logging.info('Spawning an application...')
-                self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=path, shell=False)
+                self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=path, env=self.env, shell=False)
             else:
                 logging.warning('`app.exec` is empty.')
     def is_respawnable(self):
@@ -96,7 +96,7 @@ class Config(object):
                 path = os.path.join(self.path, self.config['app']['workdir'])
             else:
                 path = self.path
-            self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=path, shell=False)
+            self.server = subprocess.Popen(self.config['app']['exec'].split(), cwd=path, env=self.env, shell=False)
 
 tick = 0
 
