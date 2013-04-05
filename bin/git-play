@@ -42,6 +42,8 @@ except:
 
 # Logging setting
 logging.basicConfig(filename=_logfile,filemode='a+',level=logging.DEBUG if _verbose else logging.INFO)
+if _verbose:
+    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
 logging.info('Git: %s, %s/%s' % (_repo, _remote, _branch))
 logging.info('Working directory: %s' % (_workdir,))
