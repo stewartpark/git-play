@@ -7,11 +7,11 @@ except:
 
 setup(
     name="git-play",
-    version="0.12",
-    author="Ju-yeong Park",
-    author_email="interruptz@gmail.com",
+    version="0.13",
+    author="Stewart Park",
+    author_email="stewartpark92@gmail.com",
     scripts=["bin/git-play"],
-    url="http://github.com/interruptz/git-play",
+    url="http://github.com/stewartpark/git-play",
     license="MIT LICENSE",
     description="Git-play is a custom git command for deploying an application server very easily from a remote git repository. It checks the remote git repository every minute and if something has changed, it will restart the application server automatically.",
     long_description = ldsc,
