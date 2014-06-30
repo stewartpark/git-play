@@ -40,6 +40,11 @@ _logfile = args.log
 _wait = int(args.wait)
 _configfile = args.config
 
+# Logging setting
+logging.basicConfig(filename=_logfile,filemode='a+',level=logging.DEBUG if _verbose else logging.INFO)
+if _verbose:
+    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+
 try:
     repo = git.Repo.clone_from(_repo, _workdir)
     if _not_specified:
@@ -59,11 +64,6 @@ except:
 
 # _workdir should be strict.
 _workdir = repo.working_dir
-
-# Logging setting
-logging.basicConfig(filename=_logfile,filemode='a+',level=logging.DEBUG if _verbose else logging.INFO)
-if _verbose:
-    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
 logging.info('Git: %s, %s/%s' % (_repo, _remote, _branch))
 logging.info('Working directory: %s' % (_workdir,))
@@ -98,7 +98,7 @@ class Config(object):
                 path = self.path
             if 'exec' in self.config['app']:
                 logging.info('Spawning an application...')
-                self.server = subprocess.Popen(self.config['app']['exec'], close_fds=True, preexec_fn=os.setsid, cwd=path, env=self.env, stdout=subprocess.PIPE, shell=True)
+                self.server = subprocess.Popen(self.config['app']['exec'], close_fds=True, preexec_fn=os.setsid, cwd=path, env=self.env, shell=True)
             else:
                 logging.warning('`app.exec` is empty.')
     def is_respawnable(self):
@@ -114,7 +114,7 @@ class Config(object):
                 path = os.path.join(self.path, self.config['app']['workdir'])
             else:
                 path = self.path
-            self.server = subprocess.Popen(self.config['app']['exec'], close_fds=True, preexec_fn=os.setsid, cwd=path, env=self.env, stdout=subprocess.PIPE, shell=True)
+            self.server = subprocess.Popen(self.config['app']['exec'], close_fds=True, preexec_fn=os.setsid, cwd=path, env=self.env, shell=True)
     def app_terminate(self):
         try:
             logging.info('Killing the server...')
