@@ -1,5 +1,5 @@
 #!/usr/bin/env python 
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 '''
     git-play
         by Ju-yeong Park <interruptz@gmail.com>
@@ -34,14 +34,17 @@ _not_specified = not args.remote and not args.branch
 _repo = args.repository
 _remote = args.remote or 'origin' 
 _branch = args.branch or 'master'
-_workdir = args.directory or os.path.basename(re.sub(r'\/$', '', args.repository.split(':')[-1]))
+_workdir = args.directory or \
+    os.path.basename(re.sub(r'\/$', '', args.repository.split(':')[-1]))
 _verbose = args.verbose
 _logfile = args.log
 _wait = int(args.wait)
 _configfile = args.config
 
 # Logging setting
-logging.basicConfig(filename=_logfile,filemode='a+',level=logging.DEBUG if _verbose else logging.INFO)
+logging.basicConfig(filename=_logfile, filemode='a+',
+                    level=logging.DEBUG if _verbose else logging.INFO)
+
 if _verbose:
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
@@ -82,14 +85,18 @@ class Config(object):
         except:
             self.config = {}
             logging.error('Failed to read configurations.')
+
     def setup(self):
         if 'setup' in self.config:
             logging.info('Setting up...')
-            os.system(("cd \"%s\";" % (self.path,)) + (';'.join(self.config['setup'])))
+            os.system(("cd \"%s\";" % (self.path,)) +
+                      (';'.join(self.config['setup'])))
     def teardown(self):
         if 'teardown' in self.config:
             logging.info('Tearing down...')
-            os.system(("cd \"%s\";" % (self.path,)) + (';'.join(self.config['teardown'])))
+            os.system(("cd \"%s\";" % (self.path,)) +
+                      (';'.join(self.config['teardown'])))
+
     def app_spawn(self):
         if 'app' in self.config:
             if 'workdir' in self.config['app']:
@@ -98,15 +105,22 @@ class Config(object):
                 path = self.path
             if 'exec' in self.config['app']:
                 logging.info('Spawning an application...')
-                self.server = subprocess.Popen(self.config['app']['exec'], close_fds=True, preexec_fn=os.setsid, cwd=path, env=self.env, shell=True)
+                self.server = subprocess.Popen(self.config['app']['exec'],
+                                               close_fds=True,
+                                               preexec_fn=os.setsid,
+                                               cwd=path,
+                                               env=self.env,
+                                               shell=True)
             else:
                 logging.warning('`app.exec` is empty.')
+
     def is_respawnable(self):
         if 'app' in self.config:
             if 'respawn' in self.config['app']:
                 if self.config['app']['respawn']:
                     return self.config['app']['respawn']
         return False
+
     def app_respawn(self):
         if self.is_respawnable():
             logging.info('Re-spawning an application...')
@@ -114,7 +128,13 @@ class Config(object):
                 path = os.path.join(self.path, self.config['app']['workdir'])
             else:
                 path = self.path
-            self.server = subprocess.Popen(self.config['app']['exec'], close_fds=True, preexec_fn=os.setsid, cwd=path, env=self.env, shell=True)
+            self.server = subprocess.Popen(self.config['app']['exec'],
+                                           close_fds=True,
+                                           preexec_fn=os.setsid,
+                                           cwd=path,
+                                           env=self.env,
+                                           shell=True)
+
     def app_terminate(self):
         try:
             logging.info('Killing the server...')
@@ -130,6 +150,7 @@ class Config(object):
                 os.killpg(self.server.pid, signal.SIGKILL)
         except:
             logging.fatal("Couldn't kill the server")
+
 tick = 0
 
 # Initial start
@@ -171,4 +192,3 @@ except KeyboardInterrupt:
     logging.info('Ctrl+C pressed.')
     _conf.teardown()
     _conf.app_terminate()
-
