@@ -18,7 +18,7 @@ import yaml
 
 
 # Parse arguments.
-parser = argparse.ArgumentParser(prog='git-play',description='Watch and deploy a repository')
+parser = argparse.ArgumentParser(prog='git-play', description='Watch and deploy a repository')
 parser.add_argument('repository', default='.', nargs='?')
 parser.add_argument('directory', nargs='?', help='Specify the name of a newly created directory (default: the name of the repository)')
 parser.add_argument('--remote', '-r')
@@ -142,8 +142,8 @@ class Config(object):
             # Press Ctrl+C
             os.killpg(self.server.pid, signal.SIGINT)
             # 5 secs to clean up
-            for x in range(10):
-                if self.server.poll() != None:
+            for x in xrange(10):
+                if self.server.poll() is not None:
                     break
                 time.sleep(0.5)
             else:
@@ -185,7 +185,7 @@ try:
         else:
             # See if the process is dead
             if _conf.is_respawnable():
-                if _conf.server.poll() != None:
+                if _conf.server.poll() is not None:
                     # Respawn.
                     _conf.app_respawn()
 except KeyboardInterrupt:
