@@ -91,6 +91,7 @@ class Config(object):
             logging.info('Setting up...')
             os.system(("cd \"%s\";" % (self.path,)) +
                       (';'.join(self.config['setup'])))
+
     def teardown(self):
         if 'teardown' in self.config:
             logging.info('Tearing down...')
