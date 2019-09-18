@@ -173,8 +173,8 @@ try:
                     break
                 except:
                     logging.error('Failed to pull, retry...')
-            # See if something is changed.
-            if rst != 'Already up-to-date.':
+            # See if something is changed. Fix 18/09/2019 handle text response for newer git versions
+            if rst not in  ('Already up to date.', 'Already up-to-date.'):
                 # If it is,
                 logging.info('Something has changed. Applying...')
                 _conf.teardown()
