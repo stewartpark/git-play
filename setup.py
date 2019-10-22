@@ -16,7 +16,7 @@ setup(
     description="Git-play is a custom git command for deploying an application server very easily from a remote git repository. It checks the remote git repository every minute and if something has changed, it will restart the application server automatically.",
     long_description = ldsc,
     install_requires=[
-        'PyYAML==3.10',
+        'PyYAML==5.1',
         'GitPython==0.3.2.RC1'      
     ]
 )
