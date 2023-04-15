@@ -17,6 +17,6 @@ setup(
     long_description = ldsc,
     install_requires=[
         'PyYAML==5.4',
-        'GitPython==0.3.2.RC1'      
+        'GitPython==3.1.30'      
     ]
 )
